@@ -1,0 +1,56 @@
+# 📦 Comandos Git - Subir para GitHub
+
+## 🚀 Comandos Rápidos
+
+### 1. Inicializar Git (primeira vez)
+
+```bash
+git init
+git add .
+git commit -m "Initial commit - API Conversões Receitas com Meta Pixel"
+```
+
+### 2. Criar Repositório no GitHub
+
+1. Acesse: https://github.com/new
+2. Nome: `api-conversoes-receitas` (ou outro)
+3. **NÃO** marque "Add README" (já temos)
+4. Clique em **Create repository**
+
+### 3. Conectar e Fazer Push
+
+```bash
+git remote add origin https://github.com/SEU-USUARIO/SEU-REPOSITORIO.git
+git branch -M main
+git push -u origin main
+```
+
+## ✅ Verificar o que será commitado
+
+```bash
+git status
+```
+
+Você deve ver apenas arquivos do projeto (sem `.env.local` ou `node_modules`)
+
+## 📋 Arquivos que NÃO serão commitados (seguro!)
+
+- ✅ `.env.local` (token não vai para o GitHub)
+- ✅ `node_modules/`
+- ✅ `.next/`
+- ✅ `.vercel/`
+
+## 🔄 Atualizações Futuras
+
+```bash
+git add .
+git commit -m "Descrição da alteração"
+git push
+```
+
+## ⚠️ Importante
+
+- **NUNCA** commite arquivos `.env` ou `.env.local`
+- O token deve ser configurado apenas na **Vercel** (variáveis de ambiente)
+- O `.gitignore` já está configurado corretamente
+

@@ -1,0 +1,23 @@
+# Exemplo de comando cURL para testar a API
+
+# 1. PRIMEIRO TESTE (deve funcionar)
+curl -X POST http://localhost:3000/api/conversion ^
+  -H "Content-Type: application/json" ^
+  -H "X-Forwarded-For: 192.168.1.100" ^
+  -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" ^
+  -d "{\"email\":\"teste@example.com\",\"firstName\":\"João\",\"lastName\":\"Silva\",\"phone\":\"(11) 99999-9999\",\"gender\":\"m\",\"birthdate\":\"1990-01-15\",\"country\":\"BR\",\"state\":\"SP\",\"city\":\"São Paulo\"}"
+
+# 2. SEGUNDO TESTE COM MESMO EMAIL (deve dar erro de duplicata)
+curl -X POST http://localhost:3000/api/conversion ^
+  -H "Content-Type: application/json" ^
+  -H "X-Forwarded-For: 192.168.1.200" ^
+  -H "User-Agent: Mozilla/5.0" ^
+  -d "{\"email\":\"teste@example.com\",\"firstName\":\"Maria\",\"lastName\":\"Santos\",\"phone\":\"(11) 88888-8888\",\"country\":\"BR\"}"
+
+# 3. TERCEIRO TESTE COM EMAIL DIFERENTE (deve funcionar)
+curl -X POST http://localhost:3000/api/conversion ^
+  -H "Content-Type: application/json" ^
+  -H "X-Forwarded-For: 192.168.1.100" ^
+  -H "User-Agent: Mozilla/5.0" ^
+  -d "{\"email\":\"teste2@example.com\",\"firstName\":\"Pedro\",\"lastName\":\"Costa\",\"phone\":\"(11) 77777-7777\",\"country\":\"BR\",\"state\":\"RJ\",\"city\":\"Rio de Janeiro\"}"
+
