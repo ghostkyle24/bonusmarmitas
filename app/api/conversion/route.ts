@@ -201,7 +201,7 @@ export async function POST(request: NextRequest) {
                    'https://seu-site.com'
     
     // Preparar evento para Conversions API conforme especificação Meta
-    const eventData = {
+    const eventData: any = {
       data: [
         {
           // Nome do evento (Standard Event)
@@ -237,15 +237,13 @@ export async function POST(request: NextRequest) {
             content_name: 'Receitas Exclusivas',
             content_category: 'Digital Product',
           },
+          
+          // Adicionar test_event_code se estiver em modo de teste
+          ...(testEventCode && { test_event_code: testEventCode }),
         },
       ],
       access_token: accessToken,
       pixel_id: pixelId,
-    }
-
-    // Adicionar test_event_code se estiver em modo de teste
-    if (testEventCode) {
-      eventData.data[0].test_event_code = testEventCode
     }
 
     // Enviar para Meta Conversions API
