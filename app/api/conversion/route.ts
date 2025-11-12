@@ -205,16 +205,21 @@ export async function POST(request: NextRequest) {
     })
 
     // Adicionar dados opcionais se disponíveis e válidos
+    // IMPORTANTE: Segundo a documentação Meta, estes campos REQUEREM hashing:
+    // ge (gender), db (date of birth), st (state), country - todos requerem hash!
     if (data.gender && data.gender.trim()) {
-      // Gênero: pode ser 'm' ou 'f' (não precisa hash, mas vamos normalizar)
+      // Gênero: REQUER hashing (formato array)
+      // Normalizar primeiro, depois hashear
       const genderValue = normalizeGender(data.gender)
       if (genderValue) {
-        customerData.gd = genderValue
+        // Meta requer ge (não gd) e deve ser hasheado em array
+        customerData.ge = [hashData(genderValue)]
       }
     }
 
     if (data.birthdate && data.birthdate.trim()) {
-      // Data de nascimento: formato YYYYMMDD (NÃO hashear)
+      // Data de nascimento: REQUER hashing (formato array)
+      // Formato: YYYYMMDD antes de hashear
       const birthdateValue = formatBirthdate(data.birthdate)
       console.log('📅 Data de nascimento:', {
         original: data.birthdate,
@@ -222,7 +227,8 @@ export async function POST(request: NextRequest) {
         valida: birthdateValue && birthdateValue.length === 8
       })
       if (birthdateValue && birthdateValue.length === 8) {
-        customerData.db = birthdateValue
+        // Meta requer db hasheado em array
+        customerData.db = [hashData(birthdateValue)]
       } else {
         console.warn('⚠️ Data de nascimento inválida, não será enviada')
       }
@@ -234,7 +240,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (data.state && data.state.trim()) {
-      // Estado: código de 2 letras ou hasheado - formato array se hasheado
+      // Estado: REQUER hashing (formato array)
+      // Mesmo se for código de 2 letras, deve ser hasheado
       const stateValue = normalizeState(data.state)
       console.log('🗺️ Estado:', {
         original: data.state,
@@ -242,21 +249,18 @@ export async function POST(request: NextRequest) {
         tipo: stateValue.length === 2 ? 'código' : 'hasheado'
       })
       if (stateValue) {
-        // Meta aceita estado como string (código de 2 letras) ou array (se hasheado)
-        if (stateValue.length === 2) {
-          customerData.st = stateValue
-        } else {
-          // Se não for código de 2 letras, enviar hasheado em array
-          customerData.st = [stateValue]
-        }
+        // Meta requer st hasheado em array (mesmo códigos de 2 letras)
+        customerData.st = [hashData(stateValue)]
       }
     }
 
     if (data.country && data.country.trim()) {
-      // País: código ISO de 2 letras (NÃO hashear)
+      // País: REQUER hashing (formato array)
+      // Mesmo códigos ISO devem ser hasheados
       const countryValue = normalizeCountry(data.country)
       if (countryValue) {
-        customerData.country = countryValue
+        // Meta requer country hasheado em array
+        customerData.country = [hashData(countryValue)]
       }
     }
 
@@ -333,10 +337,10 @@ export async function POST(request: NextRequest) {
           fn: d.user_data.fn ? ['***HASH***'] : undefined,
           ln: d.user_data.ln ? ['***HASH***'] : undefined,
           ct: d.user_data.ct ? ['***HASH***'] : undefined,
-          st: d.user_data.st,
-          db: d.user_data.db,
-          gd: d.user_data.gd,
-          country: d.user_data.country,
+          st: d.user_data.st ? ['***HASH***'] : undefined,
+          db: d.user_data.db ? ['***HASH***'] : undefined,
+          ge: d.user_data.ge ? ['***HASH***'] : undefined,
+          country: d.user_data.country ? ['***HASH***'] : undefined,
           external_id: d.user_data.external_id ? ['***HASH***'] : undefined,
         }
       }))
