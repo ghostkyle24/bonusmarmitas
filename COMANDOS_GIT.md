@@ -1,8 +1,38 @@
 # 📦 Comandos Git - Subir para GitHub
 
+## 🔄 Remover Git Existente (se necessário)
+
+Se você já fez `git init` para outro repositório e quer começar do zero:
+
+### Windows (PowerShell):
+```powershell
+# Verificar se existe repositório Git
+git status
+
+# Se existir, remover a pasta .git (isso remove TODA a configuração do Git)
+Remove-Item -Recurse -Force .git
+
+# Verificar se foi removido
+git status  # Deve dar erro "not a git repository"
+```
+
+### Linux/Mac:
+```bash
+# Verificar se existe repositório Git
+git status
+
+# Se existir, remover a pasta .git
+rm -rf .git
+
+# Verificar se foi removido
+git status  # Deve dar erro "not a git repository"
+```
+
+**⚠️ Atenção:** Isso remove TODA a história do Git. Use apenas se quiser começar do zero!
+
 ## 🚀 Comandos Rápidos
 
-### 1. Inicializar Git (primeira vez)
+### 1. Inicializar Git (primeira vez ou após remover)
 
 ```bash
 git init

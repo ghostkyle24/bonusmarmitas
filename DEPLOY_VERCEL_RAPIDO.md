@@ -5,7 +5,10 @@
 - [x] Código completo e funcionando
 - [x] `.gitignore` configurado (não commita `.env.local`)
 - [x] Token e Pixel já documentados
+- [x] Arquivo `VARIAVEIS_AMBIENTE.txt` criado com variáveis de teste
 - [x] Pronto para deploy!
+
+**📝 Nota:** As variáveis de ambiente são de teste e podem ser configuradas diretamente na Vercel. Veja o arquivo `VARIAVEIS_AMBIENTE.txt` para copiar os valores rapidamente.
 
 ## 📦 Passo 1: Subir no GitHub
 
@@ -51,30 +54,41 @@ git push -u origin main
 
 **Clique em Deploy!** ⚡
 
-### 2.3. Configurar Variáveis de Ambiente
+### 2.3. Configurar Variáveis de Ambiente ⚡
 
-Após o primeiro deploy (pode falhar sem as variáveis):
+**IMPORTANTE:** Configure as variáveis ANTES do primeiro deploy para evitar erros!
 
-1. Vá em **Settings** > **Environment Variables**
-2. Adicione:
+**💡 Dica Rápida:** Abra o arquivo `VARIAVEIS_AMBIENTE.txt` para copiar os valores rapidamente!
 
-```
-META_PIXEL_ID = 1923146491602931
-```
+1. Após importar o projeto, **NÃO clique em Deploy ainda**
+2. Vá em **Settings** > **Environment Variables**
+3. Adicione as variáveis uma por uma:
 
-```
-META_ACCESS_TOKEN = EAALfoaF9C9UBP8jZBr8Dn3MVB1a5VVmiBPv9rgLxic3V2ZBlXCdPAikulkcDp33uKoZCLk7ZCAGOaHEBQsXYaAzMlsqsLBilRd4CtmqZCZAgEvL23sCLfTFoh2MRLcE70zfZAnbkby7qPgQ0bgftz8WrrDCCnuRUtlnTCt56RC72X9JdBsFvCylEx6Ydhwq8wZDZD
-```
+**Variável 1:**
+- **Key**: `META_PIXEL_ID`
+- **Value**: `1923146491602931` (copie do arquivo `VARIAVEIS_AMBIENTE.txt`)
+- **Environment**: Marque ✅ Production, ✅ Preview, ✅ Development
+- Clique em **Save**
 
-3. Selecione **Production**, **Preview** e **Development**
-4. Clique em **Save**
+**Variável 2:**
+- **Key**: `META_ACCESS_TOKEN`
+- **Value**: `EAALfoaF9C9UBP8jZBr8Dn3MVB1a5VVmiBPv9rgLxic3V2ZBlXCdPAikulkcDp33uKoZCLk7ZCAGOaHEBQsXYaAzMlsqsLBilRd4CtmqZCZAgEvL23sCLfTFoh2MRLcE70zfZAnbkby7qPgQ0bgftz8WrrDCCnuRUtlnTCt56RC72X9JdBsFvCylEx6Ydhwq8wZDZD` (copie do arquivo `VARIAVEIS_AMBIENTE.txt`)
+- **Environment**: Marque ✅ Production, ✅ Preview, ✅ Development
+- Clique em **Save**
 
-### 2.4. Fazer Novo Deploy
+4. **Agora sim**, volte em **Deployments** e clique em **Deploy** (ou faça um novo commit)
 
+### 2.4. Fazer Novo Deploy (se necessário)
+
+Se você já configurou as variáveis antes do primeiro deploy, pule esta etapa.
+
+Caso contrário:
 1. Vá em **Deployments**
-2. Clique nos 3 pontos do último deploy
+2. Clique nos 3 pontos (⋯) do último deploy
 3. Clique em **Redeploy**
 4. Ou faça um novo commit e push (deploy automático)
+
+**💡 Dica:** Se você configurou as variáveis ANTES do deploy, não precisa fazer redeploy!
 
 ## 🎯 Passo 3: Configurar Vercel KV (Opcional mas Recomendado)
 

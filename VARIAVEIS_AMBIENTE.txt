@@ -1,0 +1,27 @@
+# Variáveis de Ambiente - API Conversões Receitas
+# Como são apenas de teste, você pode copiar estes valores
+# OU configurar diretamente na Vercel em Settings > Environment Variables
+
+# Meta Pixel ID
+META_PIXEL_ID=1923146491602931
+
+# Meta Access Token (Token de teste)
+META_ACCESS_TOKEN=EAALfoaF9C9UBP8jZBr8Dn3MVB1a5VVmiBPv9rgLxic3V2ZBlXCdPAikulkcDp33uKoZCLk7ZCAGOaHEBQsXYaAzMlsqsLBilRd4CtmqZCZAgEvL23sCLfTFoh2MRLcE70zfZAnbkby7qPgQ0bgftz8WrrDCCnuRUtlnTCt56RC72X9JdBsFvCylEx6Ydhwq8wZDZD
+
+# Test Event Code (opcional - para testes no Meta Events Manager)
+# META_TEST_EVENT_CODE=
+
+# Vercel KV (opcional - para controle de IP/Email em produção)
+# KV_REST_API_URL=
+# KV_REST_API_TOKEN=
+
+# ============================================
+# COMO USAR NA VERCEL:
+# ============================================
+# 1. Acesse seu projeto na Vercel
+# 2. Vá em Settings > Environment Variables
+# 3. Adicione cada variável acima (Key = nome, Value = valor)
+# 4. Marque Production, Preview e Development
+# 5. Clique em Save
+# 6. Faça o deploy!
+
