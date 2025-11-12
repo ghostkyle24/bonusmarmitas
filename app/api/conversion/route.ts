@@ -48,12 +48,46 @@ function hashData(data: string): string {
 // Função para formatar data de nascimento (NÃO hashear - formato YYYYMMDD)
 function formatBirthdate(birthdate: string): string {
   if (!birthdate) return ''
-  // Formato esperado pela Meta: YYYYMMDD (sem hífens)
-  const parts = birthdate.split('-')
-  if (parts.length === 3) {
-    return `${parts[0]}${parts[1]}${parts[2]}`
+  
+  // Tentar formato YYYY-MM-DD (com hífens)
+  const partsDash = birthdate.split('-')
+  if (partsDash.length === 3 && partsDash[0].length === 4) {
+    // Formato YYYY-MM-DD
+    return `${partsDash[0]}${partsDash[1]}${partsDash[2]}`
   }
-  return birthdate.replace(/-/g, '')
+  
+  // Tentar formato DD/MM/YYYY (com barras)
+  const partsSlash = birthdate.split('/')
+  if (partsSlash.length === 3) {
+    // Se o primeiro tem 2 dígitos, assume DD/MM/YYYY
+    if (partsSlash[0].length <= 2 && partsSlash[2].length === 4) {
+      // Formato DD/MM/YYYY -> converter para YYYYMMDD
+      const day = partsSlash[0].padStart(2, '0')
+      const month = partsSlash[1].padStart(2, '0')
+      const year = partsSlash[2]
+      return `${year}${month}${day}`
+    }
+    // Se o primeiro tem 4 dígitos, assume YYYY/MM/DD
+    if (partsSlash[0].length === 4) {
+      return `${partsSlash[0]}${partsSlash[1].padStart(2, '0')}${partsSlash[2].padStart(2, '0')}`
+    }
+  }
+  
+  // Tentar remover todos os separadores e verificar formato
+  const cleaned = birthdate.replace(/[-\/]/g, '')
+  if (cleaned.length === 8) {
+    // Se começar com 4 dígitos, assume YYYYMMDD
+    if (/^\d{4}/.test(cleaned)) {
+      return cleaned
+    }
+    // Se terminar com 4 dígitos, assume DDMMYYYY -> converter para YYYYMMDD
+    if (/\d{4}$/.test(cleaned)) {
+      return cleaned.slice(4) + cleaned.slice(0, 4)
+    }
+  }
+  
+  // Fallback: remover separadores
+  return birthdate.replace(/[-\/]/g, '')
 }
 
 // Função para formatar telefone (remover caracteres não numéricos antes de hashear)
@@ -158,31 +192,48 @@ export async function POST(request: NextRequest) {
       ln: [hashData(data.lastName)], // Sobrenome - HASHEADO (SHA256) - formato array
     }
 
-    // Adicionar dados opcionais se disponíveis
-    if (data.gender) {
+    // Adicionar dados opcionais se disponíveis e válidos
+    if (data.gender && data.gender.trim()) {
       // Gênero: pode ser 'm' ou 'f' (não precisa hash, mas vamos normalizar)
-      customerData.gd = normalizeGender(data.gender)
+      const genderValue = normalizeGender(data.gender)
+      if (genderValue) {
+        customerData.gd = genderValue
+      }
     }
 
-    if (data.birthdate) {
+    if (data.birthdate && data.birthdate.trim()) {
       // Data de nascimento: formato YYYYMMDD (NÃO hashear)
-      customerData.db = formatBirthdate(data.birthdate)
+      const birthdateValue = formatBirthdate(data.birthdate)
+      if (birthdateValue && birthdateValue.length === 8) {
+        customerData.db = birthdateValue
+      }
     }
 
-    if (data.city) {
+    if (data.city && data.city.trim()) {
       // Cidade: HASHEADO (SHA256) - formato array
       customerData.ct = [hashData(data.city)]
     }
 
-    if (data.state) {
+    if (data.state && data.state.trim()) {
       // Estado: código de 2 letras ou hasheado - formato array se hasheado
       const stateValue = normalizeState(data.state)
-      customerData.st = stateValue.length === 2 ? stateValue : [stateValue]
+      if (stateValue) {
+        // Meta aceita estado como string (código de 2 letras) ou array (se hasheado)
+        if (stateValue.length === 2) {
+          customerData.st = stateValue
+        } else {
+          // Se não for código de 2 letras, enviar hasheado em array
+          customerData.st = [stateValue]
+        }
+      }
     }
 
-    if (data.country) {
+    if (data.country && data.country.trim()) {
       // País: código ISO de 2 letras (NÃO hashear)
-      customerData.country = normalizeCountry(data.country)
+      const countryValue = normalizeCountry(data.country)
+      if (countryValue) {
+        customerData.country = countryValue
+      }
     }
 
     // External ID (opcional - útil para matching adicional) - formato array
