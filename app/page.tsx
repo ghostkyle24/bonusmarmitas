@@ -51,7 +51,12 @@ export default function Home() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Erro ao processar formulário')
+        // Mostrar erro mais detalhado se disponível
+        let errorMsg = data.error || 'Erro ao processar formulário'
+        if (data.details?.error?.message) {
+          errorMsg = `${errorMsg}: ${data.details.error.message}`
+        }
+        throw new Error(errorMsg)
       }
 
       // IMPORTANTE: Disparar evento Purchase no Pixel (client-side) com o MESMO event_id

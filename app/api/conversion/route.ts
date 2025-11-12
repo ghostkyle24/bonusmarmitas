@@ -261,9 +261,31 @@ export async function POST(request: NextRequest) {
     const metaData = await metaResponse.json()
 
     if (!metaResponse.ok) {
-      console.error('Erro na Meta Conversions API:', metaData)
+      console.error('Erro na Meta Conversions API:', {
+        status: metaResponse.status,
+        statusText: metaResponse.statusText,
+        response: metaData,
+        pixelId,
+        hasToken: !!accessToken,
+      })
+      
+      // Extrair mensagem de erro mais amigável
+      let errorMessage = 'Erro ao enviar evento para Meta'
+      if (metaData.error) {
+        if (metaData.error.message) {
+          errorMessage = metaData.error.message
+        } else if (typeof metaData.error === 'string') {
+          errorMessage = metaData.error
+        }
+      }
+      
       return NextResponse.json(
-        { error: 'Erro ao enviar evento para Meta', details: metaData },
+        { 
+          error: errorMessage,
+          details: metaData,
+          code: metaData.error?.code,
+          type: metaData.error?.type,
+        },
         { status: 500 }
       )
     }
