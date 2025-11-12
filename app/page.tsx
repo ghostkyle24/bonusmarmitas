@@ -39,6 +39,9 @@ export default function Home() {
     setError('')
 
     try {
+      // Log dos dados que serão enviados
+      console.log('📤 Enviando dados do formulário:', formData)
+      
       // Enviar evento para Meta Conversions API (server-side)
       const response = await fetch('/api/conversion', {
         method: 'POST',
@@ -48,7 +51,10 @@ export default function Home() {
         body: JSON.stringify(formData),
       })
 
+      console.log('📥 Status da resposta:', response.status, response.statusText)
+      
       const data = await response.json()
+      console.log('📥 Dados da resposta:', data)
 
       if (!response.ok) {
         // Mostrar erro mais detalhado se disponível
@@ -56,6 +62,12 @@ export default function Home() {
         if (data.details?.error?.message) {
           errorMsg = `${errorMsg}: ${data.details.error.message}`
         }
+        console.error('❌ Erro na resposta:', {
+          error: errorMsg,
+          details: data.details,
+          code: data.code,
+          type: data.type,
+        })
         throw new Error(errorMsg)
       }
 

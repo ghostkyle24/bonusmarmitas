@@ -184,13 +184,25 @@ export async function POST(request: NextRequest) {
     // Preparar dados do cliente conforme especificação Meta Conversions API
     // IMPORTANTE: Apenas dados pessoais identificáveis devem ser hasheados (SHA256)
     // A Meta aceita arrays para melhor matching (formato recomendado)
+    console.log('📋 Dados recebidos do formulário:', JSON.stringify(data, null, 2))
+    
+    const phoneFormatted = formatPhone(data.phone)
+    console.log('📞 Telefone formatado:', phoneFormatted)
+    
     const customerData: any = {
       // Dados OBRIGATÓRIOS para matching (devem ser hasheados e em formato array)
       em: [hashData(data.email)], // Email - HASHEADO (SHA256) - formato array
-      ph: [hashData(formatPhone(data.phone))], // Telefone - HASHEADO (SHA256) - formato array
+      ph: [hashData(phoneFormatted)], // Telefone - HASHEADO (SHA256) - formato array
       fn: [hashData(data.firstName)], // Nome - HASHEADO (SHA256) - formato array
       ln: [hashData(data.lastName)], // Sobrenome - HASHEADO (SHA256) - formato array
     }
+    
+    console.log('👤 Dados do cliente preparados (sem opcionais):', {
+      em: customerData.em[0].substring(0, 10) + '...',
+      ph: customerData.ph[0].substring(0, 10) + '...',
+      fn: customerData.fn[0].substring(0, 10) + '...',
+      ln: customerData.ln[0].substring(0, 10) + '...',
+    })
 
     // Adicionar dados opcionais se disponíveis e válidos
     if (data.gender && data.gender.trim()) {
@@ -204,8 +216,15 @@ export async function POST(request: NextRequest) {
     if (data.birthdate && data.birthdate.trim()) {
       // Data de nascimento: formato YYYYMMDD (NÃO hashear)
       const birthdateValue = formatBirthdate(data.birthdate)
+      console.log('📅 Data de nascimento:', {
+        original: data.birthdate,
+        formatada: birthdateValue,
+        valida: birthdateValue && birthdateValue.length === 8
+      })
       if (birthdateValue && birthdateValue.length === 8) {
         customerData.db = birthdateValue
+      } else {
+        console.warn('⚠️ Data de nascimento inválida, não será enviada')
       }
     }
 
@@ -217,6 +236,11 @@ export async function POST(request: NextRequest) {
     if (data.state && data.state.trim()) {
       // Estado: código de 2 letras ou hasheado - formato array se hasheado
       const stateValue = normalizeState(data.state)
+      console.log('🗺️ Estado:', {
+        original: data.state,
+        normalizado: stateValue,
+        tipo: stateValue.length === 2 ? 'código' : 'hasheado'
+      })
       if (stateValue) {
         // Meta aceita estado como string (código de 2 letras) ou array (se hasheado)
         if (stateValue.length === 2) {
@@ -296,6 +320,27 @@ export async function POST(request: NextRequest) {
       access_token: accessToken,
       pixel_id: pixelId,
     }
+    
+    console.log('📤 Evento preparado para Meta:', JSON.stringify({
+      ...eventData,
+      access_token: '***OCULTO***',
+      data: eventData.data.map((d: any) => ({
+        ...d,
+        user_data: {
+          ...d.user_data,
+          em: d.user_data.em ? ['***HASH***'] : undefined,
+          ph: d.user_data.ph ? ['***HASH***'] : undefined,
+          fn: d.user_data.fn ? ['***HASH***'] : undefined,
+          ln: d.user_data.ln ? ['***HASH***'] : undefined,
+          ct: d.user_data.ct ? ['***HASH***'] : undefined,
+          st: d.user_data.st,
+          db: d.user_data.db,
+          gd: d.user_data.gd,
+          country: d.user_data.country,
+          external_id: d.user_data.external_id ? ['***HASH***'] : undefined,
+        }
+      }))
+    }, null, 2))
 
     // Enviar para Meta Conversions API
     const metaResponse = await fetch(
@@ -310,14 +355,22 @@ export async function POST(request: NextRequest) {
     )
 
     const metaData = await metaResponse.json()
+    
+    console.log('📥 Resposta da Meta API:', {
+      status: metaResponse.status,
+      statusText: metaResponse.statusText,
+      ok: metaResponse.ok,
+      response: metaData,
+    })
 
     if (!metaResponse.ok) {
-      console.error('Erro na Meta Conversions API:', {
+      console.error('❌ Erro na Meta Conversions API:', {
         status: metaResponse.status,
         statusText: metaResponse.statusText,
         response: metaData,
         pixelId,
         hasToken: !!accessToken,
+        errorDetails: metaData.error,
       })
       
       // Extrair mensagem de erro mais amigável
