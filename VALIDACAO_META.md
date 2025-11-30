@@ -24,39 +24,90 @@
    - Normalizado: lowercase, trim, espaços normalizados
    - Hash: SHA256
 
-6. **Estado (st)** - ✅ HASHEADO (se não for código de 2 letras)
-   - Se for código de 2 letras (ex: "SP"), enviado sem hash
-   - Se for nome completo (ex: "São Paulo"), hasheado SHA256
-
-7. **External ID (external_id)** - ✅ HASHEADO
-   - Usa hash do email para melhor matching
+6. **Estado (st)** - ✅ HASHEADO
+   - **Hashing required** conforme documentação oficial Meta
+   - Usar código ANSI de 2 caracteres em lowercase (ex: "az", "ca")
+   - Estados fora dos EUA: lowercase, sem pontuação, sem espaços
    - Hash: SHA256
 
-### ❌ Dados que NÃO devem ser hasheados:
+7. **Data de Nascimento (db)** - ✅ HASHEADO
+   - **Hashing required** conforme documentação oficial Meta
+   - Formato: YYYYMMDD (ex: "19970216")
+   - Hash: SHA256
+
+8. **Gênero (ge)** - ✅ HASHEADO
+   - **Hashing required** conforme documentação oficial Meta
+   - Valores normalizados: "m" (male) ou "f" (female) em lowercase
+   - Hash: SHA256
+
+9. **País (country)** - ✅ HASHEADO
+   - **Hashing required** conforme documentação oficial Meta
+   - Código ISO 3166-1 alpha-2 em lowercase (ex: "br", "us")
+   - Hash: SHA256
+
+10. **External ID (external_id)** - ✅ HASHEADO (recomendado)
+    - Usa hash do email para melhor matching
+    - Hash: SHA256
+
+### ❌ Dados que NÃO devem ser hasheados (Do not hash):
 
 1. **IP do Cliente (client_ip_address)** - ✅ NÃO HASHEADO
-   - Enviado em texto plano (conforme especificação Meta)
+   - **Do not hash** - conforme documentação oficial Meta
+   - Enviado em texto plano (IPv4 ou IPv6)
+   - Exemplo: `168.212.226.204` ou `2001:0db8:85a3:0000:0000:8a2e:0370:7334`
 
 2. **User Agent (client_user_agent)** - ✅ NÃO HASHEADO
-   - Enviado em texto plano (conforme especificação Meta)
+   - **Do not hash** - conforme documentação oficial Meta
+   - Enviado em texto plano
+   - Exemplo: `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36...`
 
 3. **Facebook Browser ID (fbp)** - ✅ NÃO HASHEADO
+   - **Do not hash** - conforme documentação oficial Meta
    - Cookie `_fbp` enviado em texto plano
+   - Formato: `fb.${subdomain_index}.${creation_time}.${random_number}`
+   - Exemplo: `fb.1.1596403881668.1116446470`
 
 4. **Facebook Click ID (fbc)** - ✅ NÃO HASHEADO
+   - **Do not hash** - conforme documentação oficial Meta
    - Cookie `_fbc` enviado em texto plano
+   - Formato: `fb.${subdomain_index}.${creation_time}.${fbclid}`
+   - Exemplo: `fb.1.1554763741205.AbCdEfGhIjKlMnOpQrStUvWxYz1234567890`
 
-5. **País (country)** - ✅ NÃO HASHEADO
-   - Código ISO de 2 letras (ex: "BR", "US")
-   - Enviado em maiúsculas
+5. **Subscription ID (subscription_id)** - ✅ NÃO HASHEADO
+   - **Do not hash** - conforme documentação oficial Meta
+   - ID de assinatura do usuário na transação
 
-6. **Data de Nascimento (db)** - ✅ NÃO HASHEADO
-   - Formato: YYYYMMDD (ex: "19900115")
-   - Enviado sem hífens
+6. **Facebook Login ID (fb_login_id)** - ✅ NÃO HASHEADO
+   - **Do not hash** - conforme documentação oficial Meta
+   - ID emitido pela Meta quando pessoa faz login no app (App-Scoped ID)
 
-7. **Gênero (gd)** - ✅ NÃO HASHEADO (normalizado)
-   - Valores: "m" ou "f"
-   - Normalizado automaticamente
+7. **Lead ID (lead_id)** - ✅ NÃO HASHEADO
+   - **Do not hash** - conforme documentação oficial Meta
+   - ID associado a lead gerado por Meta Lead Ads
+
+8. **Anon ID (anon_id)** - ✅ NÃO HASHEADO
+   - **Do not hash** - conforme documentação oficial Meta
+   - ID de instalação único (apenas para eventos de app)
+
+9. **Page ID (page_id)** - ✅ NÃO HASHEADO
+   - **Do not hash** - conforme documentação oficial Meta
+   - ID da página do Facebook associada ao evento
+
+10. **Page Scoped User ID (page_scoped_user_id)** - ✅ NÃO HASHEADO
+    - **Do not hash** - conforme documentação oficial Meta
+    - ID de usuário com escopo de página associado ao bot do messenger
+
+11. **CTWA Click ID (ctwa_clid)** - ✅ NÃO HASHEADO
+    - **Do not hash** - conforme documentação oficial Meta
+    - Click ID gerado pela Meta para anúncios que clicam no WhatsApp
+
+12. **Instagram Account ID (ig_account_id)** - ✅ NÃO HASHEADO
+    - **Do not hash** - conforme documentação oficial Meta
+    - ID da conta do Instagram associada ao negócio
+
+13. **Instagram SID (ig_sid)** - ✅ NÃO HASHEADO
+    - **Do not hash** - conforme documentação oficial Meta
+    - Instagram-Scoped User ID (IGSID) de usuários que interagem com Instagram
 
 ## 📊 Estrutura do Evento Purchase
 
@@ -155,22 +206,31 @@ window.fbq('track', 'Purchase', {
 
 ## 📋 Checklist de Conformidade
 
-- [x] Email hasheado (SHA256)
-- [x] Telefone hasheado (SHA256)
-- [x] Nome hasheado (SHA256)
-- [x] Sobrenome hasheado (SHA256)
-- [x] Cidade hasheada (SHA256)
-- [x] Estado hasheado ou código (conforme necessário)
-- [x] País não hasheado (código ISO)
-- [x] Data de nascimento não hasheada (formato YYYYMMDD)
-- [x] IP não hasheado
-- [x] User Agent não hasheado
-- [x] fbp e fbc não hasheados
+### Dados Hasheados (Hashing Required):
+- [x] Email (em) hasheado (SHA256)
+- [x] Telefone (ph) hasheado (SHA256)
+- [x] Nome (fn) hasheado (SHA256)
+- [x] Sobrenome (ln) hasheado (SHA256)
+- [x] Cidade (ct) hasheada (SHA256)
+- [x] Estado (st) hasheado (SHA256)
+- [x] País (country) hasheado (SHA256) - código ISO lowercase
+- [x] Data de nascimento (db) hasheada (SHA256) - formato YYYYMMDD
+- [x] Gênero (ge) hasheado (SHA256) - valores "m" ou "f"
+- [x] External ID (external_id) hasheado (SHA256) - recomendado
+
+### Dados NÃO Hasheados (Do not hash):
+- [x] IP do cliente (client_ip_address) - texto plano
+- [x] User Agent (client_user_agent) - texto plano
+- [x] Facebook Browser ID (fbp) - texto plano
+- [x] Facebook Click ID (fbc) - texto plano
+
+### Evento e Configuração:
 - [x] Event ID único para deduplicação
-- [x] Evento Purchase com valor correto
+- [x] Evento Purchase com valor correto (9.90)
 - [x] Moeda BRL
-- [x] Timestamp correto
+- [x] Timestamp correto (Unix)
 - [x] URL de origem correta
+- [x] Action source: "website"
 - [x] Controle de IP implementado
 - [x] Deduplicação Pixel + Conversions API
 
@@ -186,8 +246,13 @@ Com essas implementações, seu pixel será **otimizado** porque:
 
 ## ⚠️ Importante
 
-- **Nunca** envie dados pessoais sem hash (exceto IP, User Agent, fbp, fbc)
-- **Sempre** use o mesmo `event_id` no Pixel e Conversions API
-- **Sempre** normalize dados antes de hashear (lowercase, trim)
+### Regras de Hashing:
+- **SEMPRE hashear**: em, ph, fn, ln, ct, st, db, ge, country, external_id
+- **NUNCA hashear**: client_ip_address, client_user_agent, fbp, fbc, subscription_id, fb_login_id, lead_id, anon_id, page_id, page_scoped_user_id, ctwa_clid, ig_account_id, ig_sid
+- **Sempre** normalize dados antes de hashear (lowercase, trim, remover caracteres especiais)
+- **Sempre** use o mesmo `event_id` no Pixel e Conversions API para deduplicação
 - **Sempre** valide campos obrigatórios antes de enviar
+
+### Referência Oficial:
+📖 Documentação completa: [Meta Conversions API - Customer Information Parameters](https://developers.facebook.com/docs/marketing-api/conversions-api/parameters/customer-information-parameters)
 

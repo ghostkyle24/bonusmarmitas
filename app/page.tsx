@@ -40,9 +40,9 @@ export default function Home() {
 
     try {
       // Log dos dados que serão enviados
-      console.log('📤 Enviando dados do formulário:', formData)
+      console.log('📤 [1/3] Enviando dados do formulário para Conversions API:', formData)
       
-      // Enviar evento para Meta Conversions API (server-side)
+      // PASSO 1: Enviar evento Purchase para Meta Conversions API (server-side)
       const response = await fetch('/api/conversion', {
         method: 'POST',
         headers: {
@@ -51,10 +51,10 @@ export default function Home() {
         body: JSON.stringify(formData),
       })
 
-      console.log('📥 Status da resposta:', response.status, response.statusText)
+      console.log('📥 [1/3] Status da resposta da Conversions API:', response.status, response.statusText)
       
       const data = await response.json()
-      console.log('📥 Dados da resposta:', data)
+      console.log('📥 [1/3] Resposta completa da Conversions API:', data)
 
       if (!response.ok) {
         // Mostrar erro mais detalhado se disponível
@@ -71,17 +71,38 @@ export default function Home() {
         throw new Error(errorMsg)
       }
 
-      // IMPORTANTE: Disparar evento Purchase no Pixel (client-side) com o MESMO event_id
+      // PASSO 2: Disparar evento Purchase no Pixel (client-side) com o MESMO event_id
       // Isso garante deduplicação correta entre Pixel e Conversions API
+      // O evento Purchase deve ser disparado ANTES do redirecionamento
+      console.log('🎯 [2/3] Preparando para disparar evento Purchase no Pixel...')
+      
       if (typeof window !== 'undefined' && window.fbq) {
-        window.fbq('track', 'Purchase', {
+        const purchaseData = {
           value: 9.90,
           currency: 'BRL',
           eventID: data.event_id, // Usar o mesmo event_id do servidor para deduplicação
-        })
+        }
+        
+        console.log('🎯 [2/3] Disparando evento Purchase no Pixel:', purchaseData)
+        
+        // Disparar evento Purchase no Pixel
+        window.fbq('track', 'Purchase', purchaseData)
+        
+        console.log('✅ [2/3] Evento Purchase disparado no Pixel com sucesso')
+        console.log('📊 [2/3] Event ID usado para deduplicação:', data.event_id)
+        
+        // Aguardar um pequeno delay para garantir que o Pixel tenha tempo de enviar o evento
+        // antes do redirecionamento (300ms é suficiente para a maioria dos casos)
+        console.log('⏳ [2/3] Aguardando 300ms para garantir envio do Pixel...')
+        await new Promise(resolve => setTimeout(resolve, 300))
+        console.log('✅ [2/3] Delay concluído, Pixel teve tempo de enviar o evento')
+      } else {
+        console.warn('⚠️ [2/3] Meta Pixel (fbq) não está disponível - evento não será disparado no client-side')
+        console.warn('⚠️ [2/3] Apenas o evento da Conversions API será enviado')
       }
 
-      // Redirecionar para página de sucesso
+      // PASSO 3: Redirecionar para página de sucesso APÓS disparar ambos os eventos
+      console.log('🔄 [3/3] Redirecionando para página de sucesso...')
       router.push(`/sucesso?email=${encodeURIComponent(formData.email)}`)
     } catch (err: any) {
       setError(err.message || 'Ocorreu um erro. Tente novamente.')

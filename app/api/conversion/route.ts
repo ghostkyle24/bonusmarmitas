@@ -97,24 +97,25 @@ function formatPhone(phone: string): string {
   return phone.replace(/\D/g, '')
 }
 
-// Função para normalizar país (código ISO de 2 letras, NÃO hashear)
+// Função para normalizar país (código ISO de 2 letras em lowercase - será hasheado)
 function normalizeCountry(country: string): string {
   if (!country) return ''
-  // Retornar código de 2 letras em maiúsculas
-  return country.toUpperCase().substring(0, 2)
+  // Retornar código de 2 letras em lowercase (conforme documentação Meta)
+  // A documentação requer: código ISO 3166-1 alpha-2 em lowercase antes de hashear
+  return country.toLowerCase().substring(0, 2)
 }
 
-// Função para normalizar estado (pode ser código de 2 letras ou hashear)
+// Função para normalizar estado (sempre hashear - conforme documentação Meta)
 function normalizeState(state: string): string {
   if (!state) return ''
-  // Se for código de 2 letras, retornar em maiúsculas
-  // Caso contrário, hashear
-  const cleaned = state.trim().toUpperCase()
-  if (cleaned.length === 2) {
-    return cleaned
-  }
-  // Se não for código de 2 letras, hashear
-  return hashData(state)
+  // Conforme documentação Meta: Hashing required
+  // - Código ANSI de 2 caracteres em lowercase (ex: "az", "ca")
+  // - Estados fora dos EUA: lowercase, sem pontuação, sem espaços
+  // - SEMPRE hashear, mesmo códigos de 2 letras
+  const cleaned = state.trim().toLowerCase()
+  // Remover pontuação e espaços
+  const normalized = cleaned.replace(/[^a-z0-9]/g, '')
+  return normalized
 }
 
 // Função para normalizar gênero (opcional - pode enviar como 'm' ou 'f' ou hashear)
@@ -241,15 +242,15 @@ export async function POST(request: NextRequest) {
 
     if (data.state && data.state.trim()) {
       // Estado: REQUER hashing (formato array)
-      // Mesmo se for código de 2 letras, deve ser hasheado
+      // Conforme documentação Meta: sempre hashear, mesmo códigos de 2 letras
       const stateValue = normalizeState(data.state)
       console.log('🗺️ Estado:', {
         original: data.state,
         normalizado: stateValue,
-        tipo: stateValue.length === 2 ? 'código' : 'hasheado'
+        tipo: stateValue.length === 2 ? 'código ANSI' : 'nome completo'
       })
       if (stateValue) {
-        // Meta requer st hasheado em array (mesmo códigos de 2 letras)
+        // Meta requer st hasheado em array (sempre, mesmo códigos)
         customerData.st = [hashData(stateValue)]
       }
     }
@@ -402,13 +403,21 @@ export async function POST(request: NextRequest) {
     await markIPAsUsed(clientIP)
     await markEmailAsUsed(emailHash)
 
+    console.log('✅ Evento Purchase enviado com sucesso para Meta Conversions API:', {
+      event_id: eventId,
+      events_received: metaData.events_received || 0,
+      events_dropped: metaData.events_dropped || 0,
+      messages: metaData.messages || [],
+    })
+
     // Retornar sucesso com event_id para uso no Pixel (deduplicação)
     return NextResponse.json({
       success: true,
-      message: 'Evento enviado com sucesso',
+      message: 'Evento Purchase enviado com sucesso para Meta Conversions API',
       event_id: eventId, // Importante: retornar para usar no Pixel
       meta_response: metaData,
       events_received: metaData.events_received || 0,
+      events_dropped: metaData.events_dropped || 0,
     })
   } catch (error: any) {
     console.error('Erro ao processar conversão:', error)
